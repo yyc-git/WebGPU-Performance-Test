@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title></title>
+</head>
+
+<body>
+  <canvas id="webgpu"></canvas>
+  <script>
+    let main = async () => {
+      let worker = new Worker("./src/worker/Main.js");
+
+      const canvas = document.querySelector("#webgpu");
+      console.log(
+        self.crossOriginIsolated
+      )
+
+      // worker.postMessage({
+      //   device: device
+      // });
+
+      let offscreenCanvas = canvas.transferControlToOffscreen();
+
+      worker.postMessage({
+        canvas: offscreenCanvas,
+        // transform:{
+        //     buffer:buffer
+        // }
+      }, [offscreenCanvas]);
+    }
+
+    window.addEventListener('DOMContentLoaded', main);
+  </script>
+</body>
+
+</html>
