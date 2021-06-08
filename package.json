@@ -8,6 +8,7 @@
     "@webgpu/types": "^0.1.3"
   },
   "devDependencies": {
+    "express": "^4.17.1",
     "typescript": "^4.2.4",
     "vite": "^2.3.3"
   }
