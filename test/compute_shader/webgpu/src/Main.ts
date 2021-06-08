@@ -3,7 +3,7 @@ import { computeShader } from './updateSprites';
 import { initCanvas } from './Utils';
 
 const main = async () => {
-  const count = 1500;
+  const count = 35000;
 
   const adapter = await navigator.gpu.requestAdapter();
   const device = await adapter.requestDevice();
