@@ -1,4 +1,5 @@
 import { initShader } from "../../../utils/WebGLUtils"
+import { addTime, showTime } from "../../../utils/CPUTimeUtils";
 
 const vShader =
   `precision highp float;
@@ -27,6 +28,8 @@ const fShader =
 
 let main = () => {
   let instanceCount = 500;
+
+  document.querySelector("#instance_count").innerHTML = String(instanceCount);
 
   let canvas = document.querySelector("#canvas") as HTMLCanvasElement
 
@@ -246,10 +249,14 @@ let main = () => {
 
   // let t = 0;
 
+  let cpuTimeSumArr = [];
+
   let sourceData = initialParticleData;
   let targetData = targetParticleData;
 
   setInterval(() => {
+    let n1 = performance.now();
+
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.viewport(0, 0, 800, 800);
@@ -309,7 +316,11 @@ let main = () => {
     let temp = sourceData;
     sourceData = targetData;
     targetData = temp;
+
+    addTime(cpuTimeSumArr, n1);
   }, 16);
+
+  showTime(cpuTimeSumArr);
 
   // let sum = 0;
 

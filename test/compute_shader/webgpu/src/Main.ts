@@ -1,9 +1,12 @@
 import { vertexShader, fragmentShader } from './sprite';
 import { computeShader } from './updateSprites';
 import { initCanvas } from './Utils';
+import { addTime, showTime } from '../../../utils/CPUTimeUtils';
 
 const main = async () => {
-  const count = 35000;
+  const instanceCount = 30000;
+
+  document.querySelector("#instance_count").innerHTML = String(instanceCount);
 
   const adapter = await navigator.gpu.requestAdapter();
   const device = await adapter.requestDevice();
@@ -136,8 +139,8 @@ const main = async () => {
 
   updateSimParams();
 
-  const initialParticleData = new Float32Array(count * 4);
-  for (let i = 0; i < count; ++i) {
+  const initialParticleData = new Float32Array(instanceCount * 4);
+  for (let i = 0; i < instanceCount; ++i) {
     initialParticleData[4 * i + 0] = 2 * (Math.random() - 0.5);
     initialParticleData[4 * i + 1] = 2 * (Math.random() - 0.5);
     initialParticleData[4 * i + 2] = 2 * (Math.random() - 0.5) * 0.1;
@@ -188,9 +191,13 @@ const main = async () => {
     });
   }
 
+  let cpuTimeSumArr = [];
+
   let t = 0;
 
   setInterval(() => {
+    let n1 = performance.now();
+
     renderPassDescriptor.colorAttachments[0].view = swapChain
       .getCurrentTexture()
       .createView();
@@ -200,7 +207,7 @@ const main = async () => {
       const passEncoder = commandEncoder.beginComputePass();
       passEncoder.setPipeline(computePipeline);
       passEncoder.setBindGroup(0, particleBindGroups[t % 2]);
-      passEncoder.dispatch(Math.ceil(count / 64));
+      passEncoder.dispatch(Math.ceil(instanceCount / 64));
       passEncoder.endPass();
     }
     {
@@ -208,13 +215,17 @@ const main = async () => {
       passEncoder.setPipeline(renderPipeline);
       passEncoder.setVertexBuffer(0, particleBuffers[(t + 1) % 2]);
       passEncoder.setVertexBuffer(1, spriteVertexBuffer);
-      passEncoder.draw(3, count, 0, 0);
+      passEncoder.draw(3, instanceCount, 0, 0);
       passEncoder.endPass();
     }
     device.queue.submit([commandEncoder.finish()]);
 
     ++t;
-  }, 16)
+
+    addTime(cpuTimeSumArr, n1);
+  }, 16);
+
+  showTime(cpuTimeSumArr);
 };
 
 window.addEventListener('DOMContentLoaded', main);

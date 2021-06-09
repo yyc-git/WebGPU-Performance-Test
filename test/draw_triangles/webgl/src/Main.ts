@@ -1,5 +1,6 @@
 import { initShader } from "../../../utils/WebGLUtils"
 import { create } from "../../../utils/Matrix4Utils";
+import { addTime, showTime } from "../../../utils/CPUTimeUtils";
 
 
 const vShader =
@@ -20,7 +21,9 @@ const fShader =
   }`;
 
 let main = () => {
-  let count = 26000;
+  let instanceCount = 110000;
+
+  document.querySelector("#instance_count").innerHTML = String(instanceCount);
 
   let canvas = document.querySelector("#canvas") as HTMLCanvasElement
 
@@ -46,18 +49,22 @@ let main = () => {
   let modelMatrices: Array<Float32Array> = [];
   let colors: Array<[number, number, number]> = [];
 
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < instanceCount; i++) {
     modelMatrices[i] = create();
     colors[i] = [Math.random(), Math.random(), Math.random()];
   }
 
+  let cpuTimeSumArr = [];
+
   setInterval(() => {
+    let n1 = performance.now();
+
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.viewport(0, 0, 800, 800);
     gl.disable(gl.DEPTH_TEST);
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < instanceCount; i++) {
       gl.useProgram(program);
 
       gl.uniformMatrix4fv(u_modelMatrix, false, modelMatrices[i]);
@@ -70,7 +77,11 @@ let main = () => {
 
       gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_BYTE, 0);
     }
+
+    addTime(cpuTimeSumArr, n1);
   }, 16);
+
+  showTime(cpuTimeSumArr);
 }
 
 function initVertexBuffers(gl, program) {

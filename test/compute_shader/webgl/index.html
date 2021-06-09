@@ -3,9 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WebGL Performance Test</title>
+  <title>WebGL计算</title>
 </head>
 <body>
+  <section style="margin-left:300px;">
+    <h1>三角形个数：<span id="instance_count"></span></h1>
+    <h1>CPU端耗时：<span id="cpu_time"></span> ms</h1>
+  </section>
   <canvas id="canvas"></canvas>
   <script type="module" src="./src/Main.ts"></script>
 </body>
