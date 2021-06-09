@@ -1,6 +1,6 @@
 export let getSize = () => {
     return [
-        window.innerWidth,
+        Math.floor(window.innerWidth * 0.98),
         Math.floor(window.innerHeight * 0.8)
     ];
 }

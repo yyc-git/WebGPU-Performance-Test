@@ -99,7 +99,8 @@ const initBindGroupData2 = (device: GPUDevice, uniformBuffer: GPUBuffer): [GPUBi
                 binding: 0,
                 visibility: GPUShaderStage.FRAGMENT,
                 buffer: {
-                    type: 'uniform'
+                    type: 'uniform',
+                    hasDynamicOffset: true
                 }
             }
         ]

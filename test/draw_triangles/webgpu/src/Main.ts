@@ -1,6 +1,6 @@
 import { vertexShader, fragmentShader } from './Shader';
 import { createBuffer, initCanvas, initPipeline, initWebGPU, initBindGroupData, initBindGroupData2 } from './Utils';
-import { create } from "../../../utils/Matrix4Utils";
+import { create, create2 } from "../../../utils/Matrix4Utils";
 import { addTime, showTime } from '../../../utils/CPUTimeUtils';
 import { getSize } from '../../../utils/CanvasUtils';
 
@@ -41,7 +41,6 @@ let _recordRenderPass = (device: GPUDevice, passEncoder: GPURenderBundleEncoder 
     // }
 
 
-    passEncoder.setBindGroup(1, bindGroup2);
 
 
     const uniformBytes = 16 * Float32Array.BYTES_PER_ELEMENT;
@@ -49,8 +48,16 @@ let _recordRenderPass = (device: GPUDevice, passEncoder: GPURenderBundleEncoder 
     const alignedUniformFloats = alignedUniformBytes / Float32Array.BYTES_PER_ELEMENT;
 
 
+    const uniformBytes2 = 3 * Float32Array.BYTES_PER_ELEMENT;
+    const alignedUniformBytes2 = Math.ceil(uniformBytes2 / 256) * 256;
+    const alignedUniformFloats2 = alignedUniformBytes2 / Float32Array.BYTES_PER_ELEMENT;
+
+
+
     for (let i = 0; i < instanceCount; ++i) {
         passEncoder.setBindGroup(0, bindGroup, [i * alignedUniformBytes]);
+
+        passEncoder.setBindGroup(1, bindGroup2, [i * alignedUniformBytes2]);
 
 
         passEncoder.drawIndexed(indexCount, 1, 0, 0, 0);
@@ -60,8 +67,10 @@ let _recordRenderPass = (device: GPUDevice, passEncoder: GPURenderBundleEncoder 
 let main = async () => {
     // let instanceCount = 270000;
     // let instanceCount = 270;
-    let instanceCount = 110000;
-    // let instanceCount = 3;
+    // let instanceCount = 110000;
+    // let instanceCount = 50000;
+    let instanceCount = 60000;
+    // let instanceCount = 2;
 
     document.querySelector("#instance_count").innerHTML = String(instanceCount);
 
@@ -104,6 +113,17 @@ let main = async () => {
         uniformBufferData.set(create(), alignedUniformFloats * i);
     }
 
+    // for (let i = 10; i < instanceCount; i++) {
+    //     uniformBufferData.set(create(), alignedUniformFloats * i);
+    // }
+    // for (let i = 0; i < 1; i++) {
+    //     uniformBufferData.set(create2(), alignedUniformFloats * i);
+    // }
+
+    // for (let i = 1; i < instanceCount; i++) {
+    //     uniformBufferData.set(create(), alignedUniformFloats * i);
+    // }
+
     new Float32Array(uniformBuffer.getMappedRange()).set(uniformBufferData, 0);
     uniformBuffer.unmap();
 
@@ -113,17 +133,39 @@ let main = async () => {
     const [layout, bindGroup] = initBindGroupData(device, uniformBuffer);
 
 
+    // const uniformBuffer2 = device.createBuffer({
+    //     size: 3 * Float32Array.BYTES_PER_ELEMENT,
+    //     usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
+    //     mappedAtCreation: true
+    // });
+
+    // const uniformBufferData2 = new Float32Array(3);
+    // // console.log(uniformBufferData);
+
+    // new Float32Array(uniformBuffer2.getMappedRange()).set(uniformBufferData2, 0);
+    // uniformBuffer2.unmap();
+
+
+    const uniformBytes2 = 3 * Float32Array.BYTES_PER_ELEMENT;
+    const alignedUniformBytes2 = Math.ceil(uniformBytes2 / 256) * 256;
+    const alignedUniformFloats2 = alignedUniformBytes2 / Float32Array.BYTES_PER_ELEMENT;
+
     const uniformBuffer2 = device.createBuffer({
-        size: 4 * Float32Array.BYTES_PER_ELEMENT,
+        size: instanceCount * alignedUniformBytes2,
         usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
         mappedAtCreation: true
     });
 
-    const uniformBufferData2 = new Float32Array(3);
-    // console.log(uniformBufferData);
+    const uniformBufferData2 = new Float32Array(instanceCount * alignedUniformFloats2);
+
+
+    for (let i = 0; i < instanceCount; i++) {
+        uniformBufferData2.set([Math.random(), Math.random(), Math.random()], alignedUniformFloats2 * i);
+    }
 
     new Float32Array(uniformBuffer2.getMappedRange()).set(uniformBufferData2, 0);
     uniformBuffer2.unmap();
+
 
 
 
@@ -169,35 +211,111 @@ let main = async () => {
         let [width, height] = getSize();
         passEncoder.setViewport(0, 0, width, height, 0, 1);
 
-
         // for (let i = 0; i < instanceCount; i++) {
-        //     uniformBufferData.set(create(), alignedUniformFloats * i);
+        //     uniformBufferData2.set([Math.random(), Math.random(), Math.random()], alignedUniformFloats2 * i);
         // }
 
+
+        //     uniformBufferData2.set([1,0,0], alignedUniformFloats2 * 0);
+        //     uniformBufferData2.set([0,1,0], alignedUniformFloats2 * 1);
+
+
         // device.queue.writeBuffer(
-        //     uniformBuffer,
+        //     uniformBuffer2,
+        //     // 0,
+        //     // 10 * alignedUniformBytes2,
         //     0,
-        //     uniformBufferData.buffer,
-        //     uniformBufferData.byteOffset,
-        //     uniformBufferData.byteLength
+        //     uniformBufferData2.buffer,
+        //     // uniformBufferData2.byteOffset,
+        //     0,
+        //     1 * alignedUniformBytes2,
+        //     // uniformBufferData2.byteLength 
+        //     // 10 * alignedUniformBytes2,
+        //     // 10 * alignedUniformBytes2,
         // );
 
-        uniformBufferData2.set([randomVal1, randomVal2, randomVal3], 0);
+        // device.queue.writeBuffer(
+        //     uniformBuffer2,
+        //     // 0,
+        //     // 10 * alignedUniformBytes2,
+        //     1 * alignedUniformBytes2,
+        //     uniformBufferData2.buffer,
+        //     // uniformBufferData2.byteOffset,
+        //     // 0,
+        //     1 * alignedUniformBytes2,
+        //     1 * alignedUniformBytes2,
+        //     // uniformBufferData2.byteLength 
+        //     // 10 * alignedUniformBytes2,
+        //     // 10 * alignedUniformBytes2,
+        // );
+
+
+
+
+
+
+
+        for (let i = 0; i < 10; i++) {
+            uniformBufferData2.set([Math.random(), Math.random(), Math.random()], alignedUniformFloats2 * i);
+        }
+
+
 
 
         device.queue.writeBuffer(
             uniformBuffer2,
-            0,
+            // 0,
+            // 10 * alignedUniformBytes2,
+            (instanceCount - 10) * alignedUniformBytes2,
             uniformBufferData2.buffer,
-            uniformBufferData2.byteOffset,
-            uniformBufferData2.byteLength
+            // uniformBufferData2.byteOffset,
+            0,
+            10 * alignedUniformBytes2,
+            // 1 * alignedUniformBytes2,
+            // uniformBufferData2.byteLength 
+            // 10 * alignedUniformBytes2,
+            // 10 * alignedUniformBytes2,
         );
 
+
+
+
+
+
+
+
+        // const stagingBuffer = device.createBuffer({
+        //     usage: GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC,
+        //     size: 3 * instanceCount * Float32Array.BYTES_PER_ELEMENT,
+        //     mappedAtCreation: true,
+        // });
+        // const stagingData = new Float32Array(stagingBuffer.getMappedRange());
+
+        // const copyEncoder = device.createCommandEncoder();
+
+        // for (var i = 0; i < instanceCount; i++) {
+        //     stagingData[i * 3 + 0] = Math.random();
+        //     stagingData[i * 3 + 1] = Math.random();
+        //     stagingData[i * 3 + 2] = Math.random();
+
+        //     copyEncoder.copyBufferToBuffer(stagingBuffer, i * 12,
+        //         uniformBuffer2, alignedUniformFloats2 * i,
+        //         12);
+        // }
+
+        // stagingBuffer.unmap();
 
         passEncoder.executeBundles([renderBundle]);
 
         passEncoder.endPass();
-        device.queue.submit([commandEncoder.finish()]);
+
+
+
+        // device.queue.submit([commandEncoder.finish()]);
+        device.queue.submit([
+            // copyEncoder.finish(),
+            commandEncoder.finish()
+        ]);
 
         addTime(cpuTimeSumArr, n1);
     }, 16)
