@@ -93,11 +93,39 @@ const initBindGroupData = (device: GPUDevice, uniformBuffer: GPUBuffer): [GPUBin
     return [layout, bindGroup];
 };
 
-const initPipeline = (device: GPUDevice, bindGroupLayout: GPUBindGroupLayout, vertexShader: string, fragmentShader: string, swapChainFormat: GPUTextureFormat) => {
+
+const initBindGroupData2 = (device: GPUDevice, uniformBuffer: GPUBuffer): [GPUBindGroupLayout, GPUBindGroup] => {
+    let layout = device.createBindGroupLayout({
+        entries: [
+            {
+                binding: 0,
+                visibility: GPUShaderStage.VERTEX,
+                buffer: {
+                    type: 'uniform'
+                }
+            }
+        ]
+    });
+    let bindGroup = device.createBindGroup({
+        layout: layout,
+        entries: [{
+            binding: 0,
+            resource: {
+                buffer: uniformBuffer,
+                offset: 0,
+                size: 3 * Float32Array.BYTES_PER_ELEMENT,
+            }
+        }]
+    });
+
+    return [layout, bindGroup];
+};
+
+const initPipeline = (device: GPUDevice, bindGroupLayouts: Array<GPUBindGroupLayout>, vertexShader: string, fragmentShader: string, swapChainFormat: GPUTextureFormat) => {
 
     return device.createRenderPipeline({
         layout: device.createPipelineLayout({
-            bindGroupLayouts: [bindGroupLayout]
+            bindGroupLayouts
         }),
         vertex: {
             module: device.createShaderModule({ code: vertexShader }),
@@ -133,4 +161,4 @@ const initPipeline = (device: GPUDevice, bindGroupLayout: GPUBindGroupLayout, ve
     })
 };
 
-export { initCanvas, createBuffer, initWebGPU, initPipeline, initBindGroupData }
+export { initCanvas, createBuffer, initWebGPU, initPipeline, initBindGroupData, initBindGroupData2 }

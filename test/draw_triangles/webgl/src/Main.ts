@@ -7,9 +7,10 @@ const vShader =
   `precision highp float;
   attribute vec3 a_position;
   uniform mat4 u_modelMatrix;
+  uniform vec3 u_random;
 
    void main() {
-    gl_Position = u_modelMatrix * vec4(a_position, 1.0);
+    gl_Position = u_modelMatrix * vec4(a_position.xy, u_random.z * 0.1 + a_position.z, 1.0);
   }`;
 
 const fShader =
@@ -43,6 +44,9 @@ let main = () => {
 
   let [vertexBuffer, indexBuffer] = initVertexBuffers(gl, program);
 
+
+  let u_random = gl.getUniformLocation(program, "u_random");
+
   let u_modelMatrix = gl.getUniformLocation(program, "u_modelMatrix");
   let u_color = gl.getUniformLocation(program, "u_color");
 
@@ -53,6 +57,17 @@ let main = () => {
     modelMatrices[i] = create();
     colors[i] = [Math.random(), Math.random(), Math.random()];
   }
+
+  let randomVal1 = Math.random(),
+    randomVal2 = Math.random(),
+    randomVal3 = Math.random();
+
+  setInterval(() => {
+    randomVal1 = Math.random();
+    randomVal2 = Math.random();
+    randomVal3 = Math.random();
+  }, 200);
+
 
   let cpuTimeSumArr = [];
 
@@ -71,6 +86,8 @@ let main = () => {
 
       let [r, g, b] = colors[i];
       gl.uniform3f(u_color, r, g, b);
+
+      gl.uniform3f(u_random, randomVal1, randomVal2, randomVal3);
 
       gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);

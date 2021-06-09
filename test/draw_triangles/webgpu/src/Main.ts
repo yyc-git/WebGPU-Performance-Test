@@ -1,10 +1,10 @@
 import { vertexShader, fragmentShader } from './Shader';
-import { createBuffer, initCanvas, initPipeline, initWebGPU, initBindGroupData } from './Utils';
+import { createBuffer, initCanvas, initPipeline, initWebGPU, initBindGroupData, initBindGroupData2 } from './Utils';
 import { create } from "../../../utils/Matrix4Utils";
 import { addTime, showTime } from '../../../utils/CPUTimeUtils';
 
 // let _recordRenderPass = (device: GPUDevice, passEncoder: GPURenderBundleEncoder | GPURenderPassEncoder, pipeline: GPURenderPipeline, bindGroup: GPUBindGroup, vertexBuffer: GPUBuffer, indexBuffer: GPUBuffer, uniformBuffer: GPUBuffer, instanceCount: number, indexCount: number) => {
-let _recordRenderPass = (device: GPUDevice, passEncoder: GPURenderBundleEncoder | GPURenderPassEncoder, pipeline: GPURenderPipeline, vertexBuffer: GPUBuffer, indexBuffer: GPUBuffer, bindGroup: GPUBindGroup, instanceCount: number, indexCount: number) => {
+let _recordRenderPass = (device: GPUDevice, passEncoder: GPURenderBundleEncoder | GPURenderPassEncoder, pipeline: GPURenderPipeline, vertexBuffer: GPUBuffer, indexBuffer: GPUBuffer, [bindGroup, bindGroup2]: [GPUBindGroup, GPUBindGroup], instanceCount: number, indexCount: number) => {
     passEncoder.setPipeline(pipeline);
     passEncoder.setVertexBuffer(0, vertexBuffer);
 
@@ -38,6 +38,9 @@ let _recordRenderPass = (device: GPUDevice, passEncoder: GPURenderBundleEncoder 
     //     // modelMatrices[i] = create();
     //     // colors[i] = [Math.random(), Math.random(), Math.random()];
     // }
+
+
+    passEncoder.setBindGroup(1, bindGroup2);
 
 
     const uniformBytes = 16 * Float32Array.BYTES_PER_ELEMENT;
@@ -87,7 +90,7 @@ let main = async () => {
     const alignedUniformFloats = alignedUniformBytes / Float32Array.BYTES_PER_ELEMENT;
 
     const uniformBuffer = device.createBuffer({
-        size: instanceCount * alignedUniformBytes + Float32Array.BYTES_PER_ELEMENT,
+        size: instanceCount * alignedUniformBytes,
         usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
         mappedAtCreation: true
     });
@@ -107,7 +110,24 @@ let main = async () => {
 
     // const uniformBuffer = createBuffer(device, new Float32Array(16), GPUBufferUsage.UNIFORM);
     const [layout, bindGroup] = initBindGroupData(device, uniformBuffer);
-    const renderPipeline = initPipeline(device, layout, vertexShader, fragmentShader, swapChainFormat);
+
+
+    const uniformBuffer2 = device.createBuffer({
+        size: 4 * Float32Array.BYTES_PER_ELEMENT,
+        usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM,
+        mappedAtCreation: true
+    });
+
+    const uniformBufferData2 = new Float32Array(3);
+    // console.log(uniformBufferData);
+
+    new Float32Array(uniformBuffer2.getMappedRange()).set(uniformBufferData2, 0);
+    uniformBuffer2.unmap();
+
+
+
+    const [layout2, bindGroup2] = initBindGroupData2(device, uniformBuffer2);
+    const renderPipeline = initPipeline(device, [layout, layout2], vertexShader, fragmentShader, swapChainFormat);
 
 
 
@@ -115,8 +135,18 @@ let main = async () => {
     const renderBundleEncoder = device.createRenderBundleEncoder({
         colorFormats: [swapChainFormat],
     });
-    _recordRenderPass(device, renderBundleEncoder, renderPipeline, vertexBuffer, indexBuffer, bindGroup, instanceCount, index.length);
+    _recordRenderPass(device, renderBundleEncoder, renderPipeline, vertexBuffer, indexBuffer, [bindGroup, bindGroup2], instanceCount, index.length);
     const renderBundle = renderBundleEncoder.finish();
+
+    let randomVal1 = Math.random(),
+        randomVal2 = Math.random(),
+        randomVal3 = Math.random();
+
+    setInterval(() => {
+        randomVal1 = Math.random();
+        randomVal2 = Math.random();
+        randomVal3 = Math.random();
+    }, 200);
 
     let cpuTimeSumArr = [];
 
@@ -133,6 +163,31 @@ let main = async () => {
         })
 
         passEncoder.setViewport(0, 0, 800, 800, 0, 1);
+
+
+        // for (let i = 0; i < instanceCount; i++) {
+        //     uniformBufferData.set(create(), alignedUniformFloats * i);
+        // }
+
+        // device.queue.writeBuffer(
+        //     uniformBuffer,
+        //     0,
+        //     uniformBufferData.buffer,
+        //     uniformBufferData.byteOffset,
+        //     uniformBufferData.byteLength
+        // );
+
+        uniformBufferData2.set([randomVal1, randomVal2, randomVal3], 0);
+
+
+        device.queue.writeBuffer(
+            uniformBuffer2,
+            0,
+            uniformBufferData2.buffer,
+            uniformBufferData2.byteOffset,
+            uniformBufferData2.byteLength
+        );
+
 
         passEncoder.executeBundles([renderBundle]);
 
@@ -160,7 +215,24 @@ let main = async () => {
     //     })
     //     passEncoder.setViewport(0, 0, 800, 800, 0, 1);
 
-    //     for (let i = 0; i < 105000; i++) {
+
+    //     // for (let i = 0; i < instanceCount; i++) {
+    //     //     uniformBufferData.set(create(), alignedUniformFloats * i);
+    //     // }
+
+    //     // // new Float32Array(uniformBuffer.getMappedRange()).set(uniformBufferData, 0);
+    //     // // uniformBuffer.unmap();
+
+    //     // device.queue.writeBuffer(
+    //     //     uniformBuffer,
+    //     //     0,
+    //     //     uniformBufferData.buffer,
+    //     //     uniformBufferData.byteOffset,
+    //     //     uniformBufferData.byteLength
+    //     // );
+
+
+    //     for (let i = 0; i < instanceCount; i++) {
 
     //         // passEncoder.setPipeline(renderPipeline);
     //         // passEncoder.setVertexBuffer(0, vertexBuffer);
@@ -174,6 +246,8 @@ let main = async () => {
     //         const uniformBytes = 16 * Float32Array.BYTES_PER_ELEMENT;
     //         const alignedUniformBytes = Math.ceil(uniformBytes / 256) * 256;
     //         const alignedUniformFloats = alignedUniformBytes / Float32Array.BYTES_PER_ELEMENT;
+
+
 
 
     //         passEncoder.setBindGroup(0, bindGroup, [i * alignedUniformBytes]);
