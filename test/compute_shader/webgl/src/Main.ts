@@ -1,5 +1,6 @@
 import { initShader } from "../../../utils/WebGLUtils"
 import { addTime, showTime } from "../../../utils/CPUTimeUtils";
+import { setCanvasSize, getSize } from "../../../utils/CanvasUtils";
 
 const vShader =
   `precision highp float;
@@ -33,10 +34,7 @@ let main = () => {
 
   let canvas = document.querySelector("#canvas") as HTMLCanvasElement
 
-  canvas.width = 800;
-  canvas.style.width = "800px";
-  canvas.height = 800;
-  canvas.style.height = "800px";
+  setCanvasSize(canvas);
 
   let gl = canvas.getContext("webgl");
 
@@ -259,7 +257,8 @@ let main = () => {
 
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.viewport(0, 0, 800, 800);
+    let [width, height] = getSize();
+    gl.viewport(0, 0, width, height);
     gl.disable(gl.DEPTH_TEST);
 
     // if (t % 2 === 0) {

@@ -2,6 +2,7 @@ import { vertexShader, fragmentShader } from './sprite';
 import { computeShader } from './updateSprites';
 import { initCanvas } from './Utils';
 import { addTime, showTime } from '../../../utils/CPUTimeUtils';
+import { getSize } from '../../../utils/CanvasUtils';
 
 const main = async () => {
   const instanceCount = 30000;
@@ -212,6 +213,8 @@ const main = async () => {
     }
     {
       const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+      let [width, height] = getSize();
+      passEncoder.setViewport(0, 0, width, height, 0, 1);
       passEncoder.setPipeline(renderPipeline);
       passEncoder.setVertexBuffer(0, particleBuffers[(t + 1) % 2]);
       passEncoder.setVertexBuffer(1, spriteVertexBuffer);

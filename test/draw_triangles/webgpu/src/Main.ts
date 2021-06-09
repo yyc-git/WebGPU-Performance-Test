@@ -2,6 +2,7 @@ import { vertexShader, fragmentShader } from './Shader';
 import { createBuffer, initCanvas, initPipeline, initWebGPU, initBindGroupData, initBindGroupData2 } from './Utils';
 import { create } from "../../../utils/Matrix4Utils";
 import { addTime, showTime } from '../../../utils/CPUTimeUtils';
+import { getSize } from '../../../utils/CanvasUtils';
 
 // let _recordRenderPass = (device: GPUDevice, passEncoder: GPURenderBundleEncoder | GPURenderPassEncoder, pipeline: GPURenderPipeline, bindGroup: GPUBindGroup, vertexBuffer: GPUBuffer, indexBuffer: GPUBuffer, uniformBuffer: GPUBuffer, instanceCount: number, indexCount: number) => {
 let _recordRenderPass = (device: GPUDevice, passEncoder: GPURenderBundleEncoder | GPURenderPassEncoder, pipeline: GPURenderPipeline, vertexBuffer: GPUBuffer, indexBuffer: GPUBuffer, [bindGroup, bindGroup2]: [GPUBindGroup, GPUBindGroup], instanceCount: number, indexCount: number) => {
@@ -142,17 +143,20 @@ let main = async () => {
         randomVal2 = Math.random(),
         randomVal3 = Math.random();
 
-    setInterval(() => {
-        randomVal1 = Math.random();
-        randomVal2 = Math.random();
-        randomVal3 = Math.random();
-    }, 200);
+    // setInterval(() => {
+    //     randomVal1 = Math.random();
+    //     randomVal2 = Math.random();
+    //     randomVal3 = Math.random();
+    // }, 200);
 
     let cpuTimeSumArr = [];
 
     setInterval(() => {
         let n1 = performance.now();
 
+        randomVal1 = Math.random();
+        randomVal2 = Math.random();
+        randomVal3 = Math.random();
         const commandEncoder = device.createCommandEncoder();
         const passEncoder = commandEncoder.beginRenderPass({
             colorAttachments: [{
@@ -162,7 +166,8 @@ let main = async () => {
             }]
         })
 
-        passEncoder.setViewport(0, 0, 800, 800, 0, 1);
+        let [width, height] = getSize();
+        passEncoder.setViewport(0, 0, width, height, 0, 1);
 
 
         // for (let i = 0; i < instanceCount; i++) {

@@ -1,10 +1,8 @@
 import { bufferConstrutorType, initCanvasType, typedArray } from './Type';
+import { setCanvasSize } from '../../../utils/CanvasUtils';
 
 const initCanvas: initCanvasType = (canvas: HTMLCanvasElement, width?: number, height?: number) => {
-    canvas.width = width ? width : 800;
-    canvas.height = height ? height : 800;
-    canvas.style.width = (width ? width : 800) + "px";
-    canvas.style.height = (height ? height : 800) + "px";
+    setCanvasSize(canvas);
 
     return canvas
 }

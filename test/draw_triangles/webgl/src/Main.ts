@@ -1,6 +1,7 @@
 import { initShader } from "../../../utils/WebGLUtils"
 import { create } from "../../../utils/Matrix4Utils";
 import { addTime, showTime } from "../../../utils/CPUTimeUtils";
+import { setCanvasSize, getSize } from "../../../utils/CanvasUtils";
 
 
 const vShader =
@@ -10,7 +11,8 @@ const vShader =
   uniform vec3 u_random;
 
    void main() {
-    gl_Position = u_modelMatrix * vec4(a_position.xy, u_random.z * 0.1 + a_position.z, 1.0);
+    // gl_Position = u_modelMatrix * vec4(a_position.xy, u_random.z * 0.1 + a_position.z, 1.0);
+    gl_Position = u_modelMatrix * vec4(a_position, 1.0);
   }`;
 
 const fShader =
@@ -28,10 +30,7 @@ let main = () => {
 
   let canvas = document.querySelector("#canvas") as HTMLCanvasElement
 
-  canvas.width = 800;
-  canvas.style.width = "800px";
-  canvas.height = 800;
-  canvas.style.height = "800px";
+  setCanvasSize(canvas);
 
   let gl = canvas.getContext("webgl");
 
@@ -76,7 +75,8 @@ let main = () => {
 
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.viewport(0, 0, 800, 800);
+    let [width, height] = getSize();
+    gl.viewport(0, 0, width, height);
     gl.disable(gl.DEPTH_TEST);
 
     for (let i = 0; i < instanceCount; i++) {
