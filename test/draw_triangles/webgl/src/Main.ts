@@ -41,8 +41,7 @@ const fShader =
   }`;
 
 let main = () => {
-  // let instanceCount = 110000;
-  let instanceCount = 60000;
+  let instanceCount = 70000;
 
   document.querySelector("#instance_count").innerHTML = String(instanceCount);
 
@@ -62,34 +61,23 @@ let main = () => {
   let [vertexBuffer, indexBuffer] = initVertexBuffers(gl, program);
 
 
-  // let u_random = gl.getUniformLocation(program, "u_random");
-
   let u_modelMatrix = gl.getUniformLocation(program, "u_modelMatrix");
   let u_color = gl.getUniformLocation(program, "u_color");
 
   let modelMatrices: Array<Float32Array> = [];
-  let colors: Array<[number, number, number]> = [];
 
   for (let i = 0; i < instanceCount; i++) {
     modelMatrices[i] = create();
-    colors[i] = [Math.random(), Math.random(), Math.random()];
   }
 
-  // let randomVal1 = Math.random(),
-  //   randomVal2 = Math.random(),
-  //   randomVal3 = Math.random();
+  let colors = [];
 
-  // setInterval(() => {
-  //   randomVal1 = Math.random();
-  //   randomVal2 = Math.random();
-  //   randomVal3 = Math.random();
-  // }, 200);
+  for (let i = 0; i < instanceCount; i++) {
+    let random = Math.random();
+    colors.push([random, random, random]);
+  }
 
-  let colorArr = [];
-
-    for (let i = 0; i < instanceCount - 10; i++) {
-      colorArr.push([Math.random(), Math.random(), Math.random()]);
-    }
+  let copiedColors = colors.slice();
 
 
   let cpuTimeSumArr = [];
@@ -103,17 +91,13 @@ let main = () => {
     gl.viewport(0, 0, width, height);
     gl.disable(gl.DEPTH_TEST);
 
-    for (let i = 0; i < instanceCount - 10; i++) {
-      gl.useProgram(program);
+    gl.useProgram(program);
 
+    for (let i = 0; i < instanceCount - 1000; i++) {
       gl.uniformMatrix4fv(u_modelMatrix, false, modelMatrices[i]);
 
-      // let [r, g, b] = colors[i];
-      // let [r, g, b] = [Math.random(), Math.random(), Math.random()]
-      let [r, g, b] = colorArr[i];
+      let [r, g, b] = colors[i];
       gl.uniform3f(u_color, r, g, b);
-
-      // gl.uniform3f(u_random, randomVal1, randomVal2, randomVal3);
 
       gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
@@ -121,17 +105,31 @@ let main = () => {
       gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_BYTE, 0);
     }
 
+    let randomArr = [];
 
-    for (let i = instanceCount - 10; i < instanceCount; i++) {
-      gl.useProgram(program);
+    for (let i = 0; i < 100; i++) {
+      randomArr.push(Math.ceil(Math.random() * 1000));
+    }
 
+    for (let i = instanceCount - 1000; i < instanceCount; i++) {
       gl.uniformMatrix4fv(u_modelMatrix, false, modelMatrices[i]);
 
-      // let [r, g, b] = colors[i];
-      let [r, g, b] = [Math.random(), Math.random(), Math.random()]
-      gl.uniform3f(u_color, r, g, b);
+      if (randomArr.includes(i - instanceCount + 1000)) {
+        let [r, g, b] = copiedColors[i];
+        let random = Math.random();
+        r *= random;
+        g *= random;
+        b *= random;
 
-      // gl.uniform3f(u_random, randomVal1, randomVal2, randomVal3);
+        colors[i] = [r, g, b];
+        gl.uniform3f(u_color, r, g, b);
+      }
+      else {
+        let [r, g, b] = colors[i];
+
+        gl.uniform3f(u_color, r, g, b);
+      }
+
 
       gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);

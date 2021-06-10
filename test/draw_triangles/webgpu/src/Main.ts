@@ -65,12 +65,7 @@ let _recordRenderPass = (device: GPUDevice, passEncoder: GPURenderBundleEncoder 
 }
 
 let main = async () => {
-    // let instanceCount = 270000;
-    // let instanceCount = 270;
-    // let instanceCount = 110000;
-    // let instanceCount = 50000;
-    let instanceCount = 60000;
-    // let instanceCount = 2;
+    let instanceCount = 70000;
 
     document.querySelector("#instance_count").innerHTML = String(instanceCount);
 
@@ -113,17 +108,6 @@ let main = async () => {
         uniformBufferData.set(create(), alignedUniformFloats * i);
     }
 
-    // for (let i = 10; i < instanceCount; i++) {
-    //     uniformBufferData.set(create(), alignedUniformFloats * i);
-    // }
-    // for (let i = 0; i < 1; i++) {
-    //     uniformBufferData.set(create2(), alignedUniformFloats * i);
-    // }
-
-    // for (let i = 1; i < instanceCount; i++) {
-    //     uniformBufferData.set(create(), alignedUniformFloats * i);
-    // }
-
     new Float32Array(uniformBuffer.getMappedRange()).set(uniformBufferData, 0);
     uniformBuffer.unmap();
 
@@ -160,7 +144,8 @@ let main = async () => {
 
 
     for (let i = 0; i < instanceCount; i++) {
-        uniformBufferData2.set([Math.random(), Math.random(), Math.random()], alignedUniformFloats2 * i);
+        let random = Math.random();
+        uniformBufferData2.set([random, random, random], alignedUniformFloats2 * i);
     }
 
     new Float32Array(uniformBuffer2.getMappedRange()).set(uniformBufferData2, 0);
@@ -181,24 +166,14 @@ let main = async () => {
     _recordRenderPass(device, renderBundleEncoder, renderPipeline, vertexBuffer, indexBuffer, [bindGroup, bindGroup2], instanceCount, index.length);
     const renderBundle = renderBundleEncoder.finish();
 
-    let randomVal1 = Math.random(),
-        randomVal2 = Math.random(),
-        randomVal3 = Math.random();
-
-    // setInterval(() => {
-    //     randomVal1 = Math.random();
-    //     randomVal2 = Math.random();
-    //     randomVal3 = Math.random();
-    // }, 200);
-
     let cpuTimeSumArr = [];
+
+
+    let copiedUniformBufferData2 = uniformBufferData2.slice();
 
     setInterval(() => {
         let n1 = performance.now();
 
-        randomVal1 = Math.random();
-        randomVal2 = Math.random();
-        randomVal3 = Math.random();
         const commandEncoder = device.createCommandEncoder();
         const passEncoder = commandEncoder.beginRenderPass({
             colorAttachments: [{
@@ -211,71 +186,63 @@ let main = async () => {
         let [width, height] = getSize();
         passEncoder.setViewport(0, 0, width, height, 0, 1);
 
-        // for (let i = 0; i < instanceCount; i++) {
-        //     uniformBufferData2.set([Math.random(), Math.random(), Math.random()], alignedUniformFloats2 * i);
-        // }
+        let i = 0;
 
+        while (i < 100) {
+            let j = Math.ceil(Math.random() * 1000);
 
-        //     uniformBufferData2.set([1,0,0], alignedUniformFloats2 * 0);
-        //     uniformBufferData2.set([0,1,0], alignedUniformFloats2 * 1);
+            let [r, g, b] = [
+                copiedUniformBufferData2[alignedUniformFloats2 * j],
+                copiedUniformBufferData2[alignedUniformFloats2 * j + 1],
+                copiedUniformBufferData2[alignedUniformFloats2 * j + 2],
+            ];
 
+            let random = Math.random();
 
-        // device.queue.writeBuffer(
-        //     uniformBuffer2,
-        //     // 0,
-        //     // 10 * alignedUniformBytes2,
-        //     0,
-        //     uniformBufferData2.buffer,
-        //     // uniformBufferData2.byteOffset,
-        //     0,
-        //     1 * alignedUniformBytes2,
-        //     // uniformBufferData2.byteLength 
-        //     // 10 * alignedUniformBytes2,
-        //     // 10 * alignedUniformBytes2,
-        // );
+            uniformBufferData2.set([r * random, g * random, b * random], alignedUniformFloats2 * j);
 
-        // device.queue.writeBuffer(
-        //     uniformBuffer2,
-        //     // 0,
-        //     // 10 * alignedUniformBytes2,
-        //     1 * alignedUniformBytes2,
-        //     uniformBufferData2.buffer,
-        //     // uniformBufferData2.byteOffset,
-        //     // 0,
-        //     1 * alignedUniformBytes2,
-        //     1 * alignedUniformBytes2,
-        //     // uniformBufferData2.byteLength 
-        //     // 10 * alignedUniformBytes2,
-        //     // 10 * alignedUniformBytes2,
-        // );
+            device.queue.writeBuffer(
+                uniformBuffer2,
+                (instanceCount - j) * alignedUniformBytes2,
+                uniformBufferData2.buffer,
+                j * alignedUniformBytes2,
+                1 * alignedUniformBytes2,
+            );
 
-
-
-
-
-
-
-        for (let i = 0; i < 10; i++) {
-            uniformBufferData2.set([Math.random(), Math.random(), Math.random()], alignedUniformFloats2 * i);
+            i++;
         }
 
 
 
 
-        device.queue.writeBuffer(
-            uniformBuffer2,
-            // 0,
-            // 10 * alignedUniformBytes2,
-            (instanceCount - 10) * alignedUniformBytes2,
-            uniformBufferData2.buffer,
-            // uniformBufferData2.byteOffset,
-            0,
-            10 * alignedUniformBytes2,
-            // 1 * alignedUniformBytes2,
-            // uniformBufferData2.byteLength 
-            // 10 * alignedUniformBytes2,
-            // 10 * alignedUniformBytes2,
-        );
+        // for (let i = 0; i < 10; i++) {
+        //     let [r, g, b] = [
+        //         copiedUniformBufferData2[alignedUniformFloats2 * i],
+        //         copiedUniformBufferData2[alignedUniformFloats2 * i + 1],
+        //         copiedUniformBufferData2[alignedUniformFloats2 * i + 2],
+        //     ];
+
+        //     let random = Math.random();
+
+        //     // uniformBufferData2.set([Math.random(), Math.random(), Math.random()], alignedUniformFloats2 * i);
+        //     uniformBufferData2.set([r * random, g * random, b * random], alignedUniformFloats2 * i);
+        // }
+
+
+        // device.queue.writeBuffer(
+        //     uniformBuffer2,
+        //     // 0,
+        //     // 10 * alignedUniformBytes2,
+        //     (instanceCount - 10) * alignedUniformBytes2,
+        //     uniformBufferData2.buffer,
+        //     // uniformBufferData2.byteOffset,
+        //     0,
+        //     10 * alignedUniformBytes2,
+        //     // 1 * alignedUniformBytes2,
+        //     // uniformBufferData2.byteLength 
+        //     // 10 * alignedUniformBytes2,
+        //     // 10 * alignedUniformBytes2,
+        // );
 
 
 
