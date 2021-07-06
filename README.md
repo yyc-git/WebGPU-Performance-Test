@@ -1,4 +1,4 @@
-* How to build and run
+# How to build and run
 
 1.npm install
 ```js
