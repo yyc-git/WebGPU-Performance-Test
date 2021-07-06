@@ -1,6 +1,8 @@
 {
   "name": "webgpu-performance-test",
   "version": "0.0.1",
+  "author": "yyc",
+  "license": "MIT",
   "scripts": {
     "dev": "vite"
   },
